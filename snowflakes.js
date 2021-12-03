@@ -10,7 +10,7 @@ camera.lookAt( 0, 0, 0 );
 
 const scene = new THREE.Scene();
 
-const MAX_DEPTH = 3;
+const MAX_DEPTH = 5;
 
 length = 30;
 drawBranches(0, 0, 0, length, length, 0x00ffff, 0, 0, 1, 0, 0);
@@ -51,18 +51,14 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
  
     // Take a middle point on the line....
     
-    var numBranchPoints = 2;
+    var numBranchPoints = 3;
 
     for (var k = numBranchPoints; k > 0; k--) {
 
-        // len = len / numBranchPoints - k ;
-
-        //lineLength ++;
 
         if (k == 1) {
-            color = 0x0000ff;
+            //color = 0x0000ff;
         }
-        
 
         // reflect
         for (var j = 0; j <= 1; j++) {
@@ -73,28 +69,24 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
                 theta = - theta;  // reflect it along y-axis
             }
 
-            var x1, y1, x2, y2;
-
             if (depth == 1) {
                 //color = 0xff00ff
             }
 
-            x1 = startX;
-            y1 = startY;
-            x2 = endX;
-            y2 = y1 +  lineLength ;
+            var x1 = startX;
+            var y1 = startY;
+            var x2 = endX;
+            var y2 = y1 +  lineLength ;
 
-            dx2 = dx;
-            dy2 = dy;
+            var dx2 = dx;   // Where do we move to draw the next branch
+            var dy2 = dy;
 
             var angle = Math.PI / 2.0 - rotation
 
-            var newLineLen = lineLength / Math.pow(2, depth);
-            //console.log("DEPTH=" + depth + ", newLineLen=" + newLineLen)
+            var newLineLen = k * (lineLength / Math.pow(2, depth)) / (numBranchPoints);
 
-            //console.log("2^ depth=" + Math.pow(2, depth))
-            var x = (Math.cos(angle) * (k * newLineLen) / (numBranchPoints));
-            var y = ( Math.sin(angle) * (k * newLineLen) / (numBranchPoints) );
+            var x = Math.cos(angle) * newLineLen;
+            var y = Math.sin(angle) * newLineLen;
 
             dx2 = dx - x;
             dy2 = dy + y;

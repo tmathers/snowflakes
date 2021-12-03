@@ -36,117 +36,80 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
  
         // Take a middle point on the line....
         
-        var numBranchPoints = 1;
+        var numBranchPoints = 2;
 
-        //for (var k = numBranchPoints; k > 0; k--) {
+        for (var k = numBranchPoints; k > 0; k--) {
 
            // len = len / numBranchPoints - k ;
 
             //lineLength ++;
 
-            theta = 0.7;
-
+            if (k == 1) {
+                color = 0x0000ff;
+            }
             
-            //lineLength = lineLength / 2;
 
             // reflect
-            for (var j = 0; j < 1; j++) {
+            for (var j = 0; j <= 1; j++) {
 
-                //if (j > 0) {
-                //    theta = (Math.PI * j) - theta + Math.PI;  // reflect it along y-axis
-                //    console.log("j=" + j + ",theta=" + theta);
-                //}
+                theta = 0.7;
+
+                if (j > 0) {
+                    theta = - theta;  // reflect it along y-axis
+                }
 
                 var x1, y1, x2, y2;
 
                 if (depth == 1) {
-                    color = 0xff00ff
-                }/*
-                    x1 = startX + Math.sin(theta) *  lineLength; 
-                    y1 = startY +   Math.cos(theta) *  lineLength; 
-
-                    angle = Math.asin((y1 - startY) / lineLength) - theta;
-
-                    x2 = x1 + lineLength * Math.cos(angle);
-                    y2 = y1 + lineLength * Math.sin(angle);
-                } else {
-                    */
-                    x1 = startX;
-                    y1 = startY;
-
-                    
-                    //startX += Math.cos(theta) *  lineLength; 
-                    x2 = endX;
-                    y2 = y1 + lineLength;
-
-                    //x2 = x1 + lineLength * Math.sin(theta);
-                    //y2 = y1 + lineLength * Math.cos(theta);
-                //}
-
-                //startX = lineLength * Math.sin(theta) + lineLength;
-                //startY = lineLength * Math.cos(theta) + lineLength;
-                
-                //endX = lineLength * Math.sin(theta);
-                //endY = lineLength * Math.cos(theta);
-
-               // dx = lineLength / 2 * Math.sin(theta ) + startX;
-                //dy = lineLength / 2 * Math.cos(theta ) + startY;
-                
-                //makePoint(i, 0, len, endX, endY + len, color, lineWidth );
-
-                if (i == 0) {
-                    //console.log(endX + ", " + (endY + len))
+                    //color = 0xff00ff
                 }
 
-                console.log('=====================================')
+                x1 = startX;
+                y1 = startY;
+                x2 = endX;
+                y2 = y1 + lineLength ;
 
-                console.log("DEPTH=", depth)
-                console.log("BEFORE dx, dy =" + dx + ", " + dy)
-
-                console.log("ROTATION=" + (rotation ))
+                dx2 = dx;
+                dy2 = dy;
 
                 
                 xNeg = 0                < rotation + theta  && Math.PI              > rotation + theta ;
                 yNeg = Math.PI  / 2.0   < rotation + theta && 3 * Math.PI /2.0     > rotation + theta ;    // 1.57 - 4.71
 
                 
-
+                console.log("X NEG? " , xNeg);
+                console.log("Y neg? " + yNeg)
 
                 
-                if (depth == 3) {
+                if  (xNeg || !xNeg) {
 
                     var angle = Math.PI / 2.0 - rotation
 
-                    console.log("2^ depth=" + Math.pow(2, depth))
+                    //console.log("2^ depth=" + Math.pow(2, depth))
                     var x = (Math.cos(angle) * (lineLength / Math.pow(2, depth)));
                     var y = ( Math.sin(angle) * (lineLength / Math.pow(2, depth)));
 
-                    console.log("rad to add X=" + x);
-                    console.log("rad to add Y=" + y);
+                    //console.log("rad to add X=" + x);
+                    //console.log("rad to add Y=" + y);
 
-                    dx = dx - x;
-                     dy = dy + y;
+                    dx2 = dx - x;
+                    dy2 = dy + y;
                 }
 
-                else if (depth == 1) {
-                    dx = 0;
-                    dy = lineLength / 2;
-                } else {
-                    dx = dx + (xNeg ? -1 : 1) * Math.sin(theta) * (lineLength / Math.pow(2, depth));
-                dy = dy + (yNeg ? -1 : 1) * Math.cos(theta) * (lineLength / Math.pow(2, depth)); // 1.57 - 
-
-                
-                }
+                else if (depth == 1) {  // TODO does this get called?
+                    dx2 = 0;
+                    dy2 = (lineLength) / 2;
+                } 
 
 
-                console.log("dx, dy =" + dx + ", " + dy)
+                //console.log("dx, dy =" + dx + ", " + dy)
 
                 drawBranches(x1, y1, x2, y2, 
                     lineLength, color, depth,  rotation + theta, scale / 2.0, 
-                    dx ,                         // translate to the mid-point of the last line
-                    dy);
+                    dx2 ,                         // translate to the mid-point of the last line
+                    dy2);
             }
-
+        }
     
     
 }

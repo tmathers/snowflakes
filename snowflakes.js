@@ -10,10 +10,15 @@ camera.lookAt( 0, 0, 0 );
 
 const scene = new THREE.Scene();
 
-const MAX_DEPTH = 5;
+const MAX_DEPTH = 3;
 
-length = 30;
-drawBranches(0, 0, 0, length, length, 0x00ffff, 0, 0, 1, 0, 0);
+const MAX_LINE_LENGTH = 30;
+
+const ONE_THIRD_PI = 1.047198;
+var branchAngle = 0.4;
+
+
+drawBranches(0, 0, 0, MAX_LINE_LENGTH, MAX_LINE_LENGTH, 0x00ffff, 0, 0, 1, 0, 0);
 
 
 /**
@@ -22,7 +27,6 @@ drawBranches(0, 0, 0, length, length, 0x00ffff, 0, 0, 1, 0, 0);
  * @param {*} startY 
  * @param {*} endX 
  * @param {*} endY 
- * @param {*} lineLength 
  * @param {*} color 
  * @param {*} depth 
  * @param {*} rotation 
@@ -63,10 +67,10 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
         // reflect
         for (var j = 0; j <= 1; j++) {
 
-            theta = 0.7;
+            var theta = branchAngle;
 
             if (j > 0) {
-                theta = - theta;  // reflect it along y-axis
+                theta = - branchAngle;  // reflect it along y-axis
             }
 
             if (depth == 1) {
@@ -76,27 +80,32 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
             var x1 = startX;
             var y1 = startY;
             var x2 = endX;
-            var y2 = y1 +  lineLength ;
+            var y2 = y1 +  MAX_LINE_LENGTH ;
 
             var dx2 = dx;   // Where do we move to draw the next branch
             var dy2 = dy;
 
             var angle = Math.PI / 2.0 - rotation
 
-            var newLineLen = k * (lineLength / Math.pow(2, depth)) / (numBranchPoints);
+            var dyDxHyp = k * (lineLength / 2) / (numBranchPoints - 1);
 
-            var x = Math.cos(angle) * newLineLen;
-            var y = Math.sin(angle) * newLineLen;
+
+            var x = Math.cos(angle) * dyDxHyp;
+            var y = Math.sin(angle) * dyDxHyp;
 
             dx2 = dx - x;
             dy2 = dy + y;
             
 
+            newLineLen = lineLength / (k % 2 == 0 ? 2 : 3);
+
+
             console.log("DRawing branch. depth = " + depth + ", k = " + k + ", color = "
                 + (color == 0x0000ff ? "blue" : "cyan"));
 
-            drawBranches(x1, y1, x2, y2, 
-                lineLength, color, depth,  rotation + theta, scale / (numBranchPoints + 1), 
+
+            drawBranches(x1, y1, x2, y2, newLineLen,
+                color, depth, rotation + theta, newLineLen / MAX_LINE_LENGTH,//scale / (depth + 1), 
                 dx2 ,                         // translate to the mid-point of the last line
                 dy2);
         }
@@ -153,7 +162,8 @@ function makePoint(num, startX, startY, endX, endY, color, lineWidth, rotate, sc
     geometry.scale(scale, scale, scale);
     geometry.translate(dx, dy, 0);
     
-    geometry.rotateZ(1.047198 * num);    // Radians (30 deg)
+    
+    geometry.rotateZ(ONE_THIRD_PI * num);    // Radians (30 deg)
     
 
     const line = new THREE.Line( geometry, material );

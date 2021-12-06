@@ -1,6 +1,7 @@
 
 
-const renderer = new THREE.WebGLRenderer();
+
+/*const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
@@ -8,17 +9,65 @@ const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.inner
 camera.position.set( 0, 0, 100 );
 camera.lookAt( 0, 0, 0 );
 
+renderer.render( scene, camera );
+*/
+
+
+
+var ctx;
+
+var CANVAS_HEIGHT;
+var CANVAS_WIDTH;
+
 const scene = new THREE.Scene();
 
-const MAX_DEPTH = 3;
+const MAX_DEPTH = 4;
 
-const MAX_LINE_LENGTH = 30;
+var MAX_LINE_LENGTH = 100;
 
 const ONE_THIRD_PI = 1.047198;
-var branchAngle = 0.4;
 
 
-drawBranches(0, 0, 0, MAX_LINE_LENGTH, MAX_LINE_LENGTH, 0x00ffff, 0, 0, 1, 0, 0);
+const color1 = rgbToHex(
+        0,
+        Math.floor(255 * Math.random()),
+        255//Math.floor(255 * Math.random()),
+    );
+
+
+var branchAngle = Math.random() * 0.7 + 0.4 //.7;
+var branchLengthFactor = Math.random() * 0.3 + 0.3;//0.5;
+var numBranchPoints = Math.round(Math.random() * 3 + 3);//4;
+
+
+window.onload = function load() {
+    var canvas = document.getElementById("canvas");
+    CANVAS_WIDTH = canvas.width = window.innerWidth;
+    CANVAS_HEIGHT = canvas.height = window.innerHeight;
+
+    MAX_LINE_LENGTH = CANVAS_HEIGHT / 4;
+
+    ctx = canvas.getContext("2d");
+
+    // Create background
+    var grd = ctx.createRadialGradient(
+        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0, 
+        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH / 2);
+    grd.addColorStop(0, "#191970");
+    grd.addColorStop(1, "black");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); 
+
+    drawBranches(0, 0, 0, MAX_LINE_LENGTH, MAX_LINE_LENGTH, 0x00ffff, 0, 0, 1, 0, 0);
+
+
+    // download button
+    var link = document.getElementById('link');
+    link.setAttribute('download', 'snowflake.png');
+    link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+   
+}
+
 
 
 /**
@@ -42,7 +91,7 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
     }
     depth++;
 
-    console.log("DEPTH = " + depth)
+    //console.log("DEPTH = " + depth + " dx=" + dx + ", " + dy)
 
 
     var lineWidth = 1;
@@ -50,13 +99,11 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
     for (var i = 0; i < 6; i++) {
         
         // when depth == 1, this makes the first 6 lines
-        makePoint(i, startX, startY, endX, endY, color, lineWidth, rotation, scale, dx, dy);
+        makePointOnCanvas(i, startX, startY, endX, endY, color, lineWidth, rotation, scale, dx, dy, depth);
     }
  
     // Take a middle point on the line....
     
-    var numBranchPoints = 3;
-
     for (var k = numBranchPoints; k > 0; k--) {
 
 
@@ -97,11 +144,10 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
             dy2 = dy + y;
             
 
-            newLineLen = lineLength / (k % 2 == 0 ? 2 : 3);
+            newLineLen = lineLength * (k % 2 == 0 ? branchLengthFactor : (branchLengthFactor / 2));
 
 
-            console.log("DRawing branch. depth = " + depth + ", k = " + k + ", color = "
-                + (color == 0x0000ff ? "blue" : "cyan"));
+            //console.log("DRawing branch. depth = " + depth + ", k = " + k );
 
 
             drawBranches(x1, y1, x2, y2, newLineLen,
@@ -115,77 +161,63 @@ function drawBranches(startX, startY, endX, endY, lineLength, color, depth, rota
 }
 
 
-
-renderer.render( scene, camera );
-
-
-
 /**
  * 
- * 
- *        angle
- *      |--/
- *      | / length
- *      |/
- *      . (startX, startY)
- * 
- *      sin = opp/hyp
- *      cos = adj/hyp           sin(theta) = x/length   =>  x = length * sin(theta)
- *      tan = opp/adg           cos(theta) = y/length   =>  y = length * cos(theta)
- * 
- *      
- * 
- *      have angle, & length 
- * 
  * @param {*} num 
- * @param {*} pointLen 
+ * @param {*} startX 
+ * @param {*} startY 
+ * @param {*} endX 
+ * @param {*} endY 
+ * @param {*} color 
+ * @param {*} lineWidth 
+ * @param {*} rotate 
+ * @param {*} scale 
+ * @param {*} dx 
+ * @param {*} dy 
  */
+function makePointOnCanvas(num, startX, startY, endX, endY, color, lineWidth, rotate, scale, dx, dy, depth) {
+    
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    var grad= ctx.createLinearGradient(startX, startY, endX, endY);
+    grad.addColorStop(0, color1);
+    grad.addColorStop(1, "white");
+    
+
+    ctx.strokeStyle = grad;
+
+    ctx.lineWidth = 8 * depth;
+    ctx.lineCap = "round";
 
 
-function makePoint(num, startX, startY, endX, endY, color, lineWidth, rotate, scale, dx, dy) {
-
-    const points = [];
-
-    points.push( new THREE.Vector2( startX, startY ));
-    points.push( new THREE.Vector2( endX, endY ));
-
-    material = new THREE.LineBasicMaterial( { color: color, linewidth: lineWidth} );
-    const geometry = new THREE.BufferGeometry().setFromPoints( points );
+    ctx.translate((CANVAS_WIDTH / 2), (CANVAS_HEIGHT / 2) );
+    
+    ctx.rotate(ONE_THIRD_PI * num);
+    
+    ctx.translate(dx,  dy);
+    
 
     if (rotate != 0) {
-        geometry.translate(- startX, - startY, 0);
-        geometry.rotateZ(rotate);
-        geometry.translate(startX, startY, 0);
+        ctx.rotate(rotate);   
     }
-
     
-    geometry.scale(scale, scale, scale);
-    geometry.translate(dx, dy, 0);
-    
-    
-    geometry.rotateZ(ONE_THIRD_PI * num);    // Radians (30 deg)
-    
+    ctx.scale(scale, scale);
 
-    const line = new THREE.Line( geometry, material );
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
 
-    scene.add( line );
+    // Reset transformation matrix to the identity matrix
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+}
 
 
-       /* const geometry = new LineGeometry();
-    geometry.setPositions( points );
-    geometry.setColors( colors );
-
-    geometry.rotateZ(1.047198 * num);  // Radians (30 deg)
-
-    matLine = new LineMaterial( {
-        color: color,
-        linewidth: lineWidth, // in pixels
-        vertexColors: true,
-        dashed: false
-    } );
-
-    line = new Line2( geometry, matLine );
-    line.computeLineDistances();
-    scene.add( line );
-*/
+function componentToHex(c) {
+    let hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }

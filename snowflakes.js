@@ -41,8 +41,13 @@ function setParams() {
 
 
 window.onload = function load() {
+
+
     var canvas = document.getElementById("canvas");
 
+    CANVAS_WIDTH = canvas.width = window.innerWidth;
+    CANVAS_HEIGHT = canvas.height = window.innerHeight;
+    
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
 
